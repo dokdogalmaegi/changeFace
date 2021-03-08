@@ -1,20 +1,28 @@
 from cv2 import cv2
 import numpy as np
+import random
 
 text = "Found. your face!"
 
-overlayFace = cv2.imread('1000.png', -1)
+overlayFace = cv2.imread('1001.png', -1)
 
 changingFace = False
 
 secretCode = 0
 
+randomBox = []
+weight = 50
+
 init = 0
 
 # 보통 쓰는 카메라가 0번에 등록되어 있으니 0번을 사용
 cap = cv2.VideoCapture(0)
-cap.set(3, 640) # 너비 (width)
-cap.set(4, 480) # 높이 (height)
+
+width = 640
+height = 480
+
+cap.set(3, width) # 너비 (width)
+cap.set(4, height) # 높이 (height)
 
 print('width :%d, height : %d' % (cap.get(3), cap.get(4)))
 
@@ -22,8 +30,6 @@ xml = 'haarcascade_frontalface_default.xml'
 face_cascade = cv2.CascadeClassifier(xml)
 
 while(True) :
-    print(init)
-
     if secretCode >= 4 :
         changingFace = True
 
@@ -46,8 +52,25 @@ while(True) :
 
     if len(faces) :
         for (x, y, w, h) in faces :
+
+            center = (x + int(w / 2), y + int(h / 2))
+
+            for ranX, ranY, ranCenX, ranCenY in randomBox :
+                centerX, centerY = center
+
+                if ranCenX == centerX and ranCenY == ranCenY :
+                    randomBox.remove((ranX, ranY, ranCenX, ranCenY))
+
+                print(f'centerX : {centerX}, centerY : {centerY} \nranCenX : {ranCenX}, ranCenY : {ranCenY}')
+
+            # x -= int(w / 2)
+            # y -= int(h / 2)
+            # w *= 2
+            # h *= 2
+
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 1)
-            cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+            cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (155, 155, 0), 2)
+            
 
             if changingFace :    
                 changeFace = cv2.resize(overlayFace, dsize=(h, w), interpolation=cv2.INTER_LINEAR)
@@ -59,9 +82,10 @@ while(True) :
 
                 for c in range(0, 3) :
                     frame[y1:y2, x1:x2, c] = (overlayAlpha * changeFace[:, :, c] + imgAlpha * frame[y1:y2, x1:x2, c])
-
             
-    
+    for x, y, t, e in randomBox :
+        cv2.rectangle(frame, (x, y), (x + weight, y + weight), (255, 0, 0), -1)
+
     cv2.imshow("result" , frame)
 
     k = cv2.waitKey(30) & 0xff
@@ -97,6 +121,14 @@ while(True) :
             init = 0
             secretCode = 0
     # }
+
+    if k == ord(' ') :
+        randomNumX = random.randrange(0, width)
+        randomNumY = random.randrange(0, height)
+
+        randomBox.insert(len(randomBox), (randomNumX, randomNumY, randomNumX + int(weight / 2), randomNumY + int(weight / 2)))
+
+    
 
 cap.release()
 cap.destroyWindow()
