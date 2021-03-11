@@ -1,30 +1,38 @@
+from win10toast import ToastNotifier
 from cv2 import cv2
 import numpy as np
 import random
 
 text = "Found. your face!"
 
-overlayFace = cv2.imread('1001.png', -1)
+# Image of face to replace
+overlayFace = cv2.imread('duck.png', -1)
 
 changingFace = False
 
+# secretCode Active whether
 secretCode = 0
 
+# random box list, weight
 randomBox = []
 weight = 50
 
+# Initialization variables 
 init = 0
 
-# 보통 쓰는 카메라가 0번에 등록되어 있으니 0번을 사용
+# select Webcam
 cap = cv2.VideoCapture(0)
 
 width = 640
 height = 480
 
+toaster = ToastNotifier()
+toaster.show_toast('', f'width : {width}, height : {height}', duration=10)
+
 cap.set(3, width) # 너비 (width)
 cap.set(4, height) # 높이 (height)
 
-print('width :%d, height : %d' % (cap.get(3), cap.get(4)))
+print('width : %d, height : %d' % (cap.get(3), cap.get(4)))
 
 xml = 'haarcascade_frontalface_default.xml'
 face_cascade = cv2.CascadeClassifier(xml)
@@ -40,7 +48,7 @@ while(True) :
     # 읽은 프레임은 frame에 할답됩니다.
     ret, frame = cap.read()
 
-    # 좌우 대칭
+    # Left and right symmetry
     frame = cv2.flip(frame, 1) 
 
     # 예측을 하기 위해 grayscale로 조정
@@ -48,12 +56,12 @@ while(True) :
 
     faces = face_cascade.detectMultiScale(gray, 1.05, 5)
     if len(faces) is not 0 :
-        print("Number of faces detected : " + str(len(faces)))
+        print(f'Number of faces detected : {str(len(faces))}')
 
     if len(faces) :
         for (x, y, w, h) in faces :
 
-            center = (x + int(w / 2), y + int(h / 2))
+            z = (x + int(w / 2), y + int(h / 2))
 
             for ranX, ranY, ranCenX, ranCenY in randomBox :
                 centerX, centerY = center
